@@ -3,7 +3,7 @@ import './App.css';
 import io from 'socket.io-client';
 
 
-const socket = io('http://localhost:4000', { transports : ['websocket', 'polling', 'flashsocket'] });
+const socket = io('http://localhost:3000');
 
 function App() {
   const ref = useRef(false)
@@ -12,8 +12,8 @@ function App() {
       ref.current = true
       return
     }
-    socket.emit("serialdata" , "")
-    socket.on('serialdata', (data) => {
+    // socket.emit("serialdata" , "")
+    socket.on('data', (data) => {
         console.log(data);
     })
   }, []);
