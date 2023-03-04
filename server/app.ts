@@ -45,7 +45,7 @@ parser.on('data', (data:any)=>{
   io.emit('data', data.toString());
 })
 
-http.listen(4000,()=>{
+http.listen(3000,()=>{
   console.log("Server is running.....");
 })
 
