@@ -1,0 +1,19 @@
+.App{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}   
+button{
+    margin: 5px;
+    padding: 5px 10px;
+    background-color: transparent;
+    border: 1px solid #34bf49;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+button:hover{
+    background-color:#34bf49;
+    color: white;
+    
+}

@@ -3,51 +3,111 @@ import { Socket } from 'socket.io';
 import { SerialPort, ReadlineParser } from 'serialport'
 import { Server } from 'socket.io';
 const app = express();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static('public'));
 const server =  require('http').createServer(app)
 
-// const io = new Server(server, {
-//   cors: {
-//       origin: "*",
-//       methods: "*",
-//         credentials: true
-//     }
-// });
+const io = new Server(server, {
+  cors: {
+      origin: "*",
+      methods: "*",
+        credentials: true
+    }
+});
 
 
 
 
-// io.on('connection',(socket:any)=>{
-//   socket.on("serialdata",(data:any)=>{    
-//     socket.emit("serialdata" , "hi")
-//     socket.emit("serialdata" , "hi")
-//     socket.emit("serialdata" , "hi")
-//     socket.emit("serialdata" , "hi")
-//   })
-//   socket.on('disconnect', () => {
-//     console.log('user disconnected');
-//   });
-// });
+try{
+  interface SerialData {
+    pos1 : number,
+    pos2 : number,
+    freq1 : number,
+    freq2 : number,
+    delayTime : number,
+  }
+
+  let preprocess : Function = (data:string) : SerialData =>{
+    let newData : SerialData
+    try{
+      let arr : string []= data.split(" ")
+      newData = {pos1: Number(arr[1]) , pos2:Number(arr[2]), freq1:Number(arr[3]), freq2:Number(arr[4]),  delayTime : Number(arr[5])}
+    }
+    catch(err:any){
+      newData = {
+        pos1 : 0,
+        pos2 : 0,
+        freq1 : 0,
+        freq2 : 0,
+        delayTime : 0
+      }
+    }
+    
+    return newData
+  } 
+
+  const port = new SerialPort({ path:"COM3", baudRate:9600 })
+
+  const parser:any = new ReadlineParser()
+
+  port.pipe(parser)
+
+  parser.on('data', (serialData:any)=>{
+    console.log(serialData);
+    io.on('connection',(socket:Socket)=>{
+      socket.on("serialdata",(data:any)=>{    
+        socket.emit("serialdata" , serialData)
+        let obj : SerialData = {
+                    pos1 : 0,
+                    pos2 : 0,
+                    freq1 : 0,
+                    freq2 : 0,
+                    delayTime : 0
+                  }
+                  // for (let index = 0; index < 10; index++) {
+                    
+                    // let serialData = `$ 1 2 3 4 00000${index}\n`
+                  obj=preprocess(serialData)
+                  socket.emit("serialdata" , obj)
+                    
+                  // }
+      })
+      socket.on('disconnect', () => {
+        console.log('user disconnected');
+      });
+    });
+  })
+  port.write('ROBOT PLEASE RESPOND\n')
+  // io.on('connection',(socket:Socket)=>{
+  //       socket.on("serialdata",(data:any)=>{   
+  //         let obj : SerialData = {
+  //           pos1 : 0,
+  //           pos2 : 0,
+  //           freq1 : 0,
+  //           freq2 : 0,
+  //           delayTime : 0
+  //         }
+  //         for (let index = 0; index < 10; index++) {
+            
+  //           let serialData = `$ 1 2 3 4 00000${index}\n`
+  //           obj=preprocess(serialData)
+  //           socket.emit("serialdata" , obj)
+            
+  //         }
+  //       })
+  //       socket.on('disconnect', () => {
+  //         console.log('user disconnected');
+  //       });
+  //     });
+}
+catch(err:any){
+  console.log("the kit isn't connected or the path is wrong");
+}
 
 
-const port = new SerialPort({ path:"COM4", baudRate:9600 })
-
-const parser:any = new ReadlineParser()
-
-port.pipe(parser)
-
-parser.on('data', (data:any)=>{
-  console.log(data);
-  io.emit('data', data.toString());
-})
-
-http.listen(3000,()=>{
+server.listen(4000,()=>{
   console.log("Server is running.....");
 })
 
-port.write('ROBOT PLEASE RESPOND\n')
 
