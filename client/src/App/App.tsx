@@ -75,6 +75,7 @@ function downloadCSV(data:any) {
 
 function App() {
   const [Data, setData] = useState<any>([]);
+  const [stop , setStop] = useState<boolean>(false);
   const ref = useRef(false);
   const ref2 = useRef(0);
   useEffect(() => {
@@ -82,15 +83,14 @@ function App() {
       ref.current = true;
       return;
     }
-
-    socket.emit("serialdata", "");
-    socket.on("serialdata", (data) => {
-      ref2.current += data.delayTime;
-
-      data.delayTime = ref2.current;
-
-      setData((prev: any) => [...prev, data]);
-    });
+    if (!stop) {
+      socket.emit("serialdata", "");
+      socket.on("serialdata", (data) => {
+        ref2.current += data.delayTime;
+        data.delayTime = ref2.current;
+        setData((prev: any) => [...prev, data]);
+      });
+    } 
   }, []);
 
   return (
@@ -122,7 +122,11 @@ function App() {
         <p>Fruequency 2 : {Data.length > 0  && Data[Data.length-1].freq2}</p>
       </div>
       <div className="">
-        <button onClick={()=>setData([])}>Clear Graph</button>
+        <button onClick={()=>{
+          ref2.current = 0
+          setStop(false)
+        }}>Start</button>
+        <button onClick={()=>setStop(true)}>Stop</button>
         <button onClick={() => downloadCSV(Data)}>Download CSV</button>
       </div>
     </div>

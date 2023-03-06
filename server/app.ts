@@ -15,9 +15,7 @@ const io = new Server(server, {
         credentials: true
     }
 });
-
-
-
+io.setMaxListeners(20);
 
 try{
   interface SerialData {
@@ -32,7 +30,7 @@ try{
     let newData : SerialData
     try{
       let arr : string []= data.split(" ")
-      newData = {pos1: Number(arr[1]) , pos2:Number(arr[2]), freq1:Number(arr[3]), freq2:Number(arr[4]),  delayTime : Number(arr[5])}
+      newData = {pos1: Number(arr[1].split("\x00")[0]) , pos2:Number(arr[2].split("\x00")[0]), freq1:Number(arr[3].split("\x00")[0]), freq2:Number(arr[4].split("\x00")[0]),  delayTime : Number(arr[5].split("\x00")[0])}
     }
     catch(err:any){
       newData = {
@@ -57,7 +55,6 @@ try{
     console.log(serialData);
     io.on('connection',(socket:Socket)=>{
       socket.on("serialdata",(data:any)=>{    
-        socket.emit("serialdata" , serialData)
         let obj : SerialData = {
                     pos1 : 0,
                     pos2 : 0,
@@ -69,6 +66,8 @@ try{
                     
                     // let serialData = `$ 1 2 3 4 00000${index}\n`
                   obj=preprocess(serialData)
+                  socket.setMaxListeners(20);
+
                   socket.emit("serialdata" , obj)
                     
                   // }
