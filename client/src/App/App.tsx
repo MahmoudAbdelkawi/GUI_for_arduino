@@ -89,12 +89,13 @@ function App() {
           clearInterval(id)
         }
         socket.emit("serialdata", "");
-        socket.on("serialdata", (data) => {
+        
+      }, 100);
+      socket.on("serialdata", (data) => {
         ref2.current += data.delayTime;
         data.delayTime = ref2.current;
         setData((prev: any) => [...prev, data]);
       });
-      }, 100);
       
     } 
   }, []);
