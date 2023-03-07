@@ -2,6 +2,12 @@ import express from  'express';
 import { Socket } from 'socket.io';
 import { SerialPort, ReadlineParser } from 'serialport'
 import { Server } from 'socket.io';
+const readline = require('readline');
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout
+});
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -56,7 +62,7 @@ try{
   parser.on('data', (serialData:any)=>{
     console.log(serialData);
     io.on('connection',(socket:Socket)=>{
-      socket.on("serialdata",(data:any)=>{    
+      socket.on("serialdata",async(data:any)=>{    
         let obj : SerialData = {
                     pos1 : 0,
                     pos2 : 0,
@@ -72,6 +78,7 @@ try{
                   socket.setMaxListeners(20);
                   csvData.push({...obj , delayTime})
                   socket.emit("serialdata" , obj)
+                  await new Promise(resolve => setTimeout(resolve, 10));
                     
                   // }
       })
@@ -89,11 +96,11 @@ try{
   //   { pos1: -100, pos2: 100, freq1: 100, freq2: 200, delayTime: 50 },
   //   { pos1: 0, pos2: 100, freq1: 100, freq2: 200, delayTime: 50 },
   // ]
-  // setInterval(()=>{
+  // // setInterval(()=>{
   // index+=1
   
   // io.on('connection',(socket:Socket)=>{
-  //       socket.on("serialdata",(data:any)=>{   
+  //       socket.on("serialdata",async(data:any)=>{   
   //         let obj : SerialData = {
   //           pos1 : 0,
   //           pos2 : 0,
@@ -101,14 +108,19 @@ try{
   //           freq2 : 0,
   //           delayTime : 0
   //         }
-          
-          
-  //           // console.log(arr[index%4]);
+  //         while (true) {
+  //           console.log(arr[index%4]);
+
   //           delayTime+=arr[index%4].delayTime
   //           console.log(index);
-  //           socket.setMaxListeners(31);
+  //           socket.setMaxListeners(20);
   //           csvData.push({...arr[index%4] , delayTime})
   //           socket.emit("serialdata" , arr[index % 4])
+  //           await new Promise(resolve => setTimeout(resolve, 10));
+  //           index++
+  //         }
+          
+            
           
             
   //           // let serialData = `$ 1 2 3 4 00000${index}\n`
@@ -121,7 +133,7 @@ try{
   //       });
 
   //     });
-  //   },1)
+  //   // },1)
 }
 catch(err:any){
   console.log("the kit isn't connected or the path is wrong");
@@ -137,7 +149,8 @@ const save = async (csvData:any) => {
     await csv.toDisk('./Data.csv');
   }
   save(csvData)
-
+  rl.close();
+  // process.exit();
 });
 
 server.listen(4000,()=>{
