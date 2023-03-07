@@ -16,7 +16,8 @@ const io = new Server(server, {
     }
 });
 io.setMaxListeners(20);
-
+let csvData :any []= []
+let delayTime = 0
 try{
   interface SerialData {
     pos1 : number,
@@ -45,6 +46,7 @@ try{
     return newData
   } 
 
+
   const port = new SerialPort({ path:"COM3", baudRate:9600 })
 
   const parser:any = new ReadlineParser()
@@ -66,8 +68,9 @@ try{
                     
                     // let serialData = `$ 1 2 3 4 00000${index}\n`
                   obj=preprocess(serialData)
+                  delayTime+=obj.delayTime
                   socket.setMaxListeners(20);
-
+                  csvData.push({...obj , delayTime})
                   socket.emit("serialdata" , obj)
                     
                   // }
@@ -78,6 +81,17 @@ try{
     });
   })
   port.write('ROBOT PLEASE RESPOND\n')
+
+  // let index = 0
+  // let arr = [
+  //   { pos1: 0, pos2: 100, freq1: 100, freq2: 200, delayTime: 50 },
+  //   { pos1: 100, pos2: -100, freq1: 100, freq2: 200, delayTime: 50 },
+  //   { pos1: -100, pos2: 100, freq1: 100, freq2: 200, delayTime: 50 },
+  //   { pos1: 0, pos2: 100, freq1: 100, freq2: 200, delayTime: 50 },
+  // ]
+  // setInterval(()=>{
+  // index+=1
+  
   // io.on('connection',(socket:Socket)=>{
   //       socket.on("serialdata",(data:any)=>{   
   //         let obj : SerialData = {
@@ -87,23 +101,44 @@ try{
   //           freq2 : 0,
   //           delayTime : 0
   //         }
-  //         for (let index = 0; index < 10; index++) {
+          
+          
+  //           // console.log(arr[index%4]);
+  //           delayTime+=arr[index%4].delayTime
+  //           console.log(index);
+  //           socket.setMaxListeners(31);
+  //           csvData.push({...arr[index%4] , delayTime})
+  //           socket.emit("serialdata" , arr[index % 4])
+          
             
-  //           let serialData = `$ 1 2 3 4 00000${index}\n`
-  //           obj=preprocess(serialData)
-  //           socket.emit("serialdata" , obj)
+  //           // let serialData = `$ 1 2 3 4 00000${index}\n`
+  //           // obj=preprocess(serialData)
             
-  //         }
-  //       })
+            
+  //         })
   //       socket.on('disconnect', () => {
   //         console.log('user disconnected');
   //       });
+
   //     });
+  //   },1)
 }
 catch(err:any){
   console.log("the kit isn't connected or the path is wrong");
 }
 
+
+process.on('SIGINT', () => {
+  // console.log(csvData);
+  const ObjectsToCsv = require('objects-to-csv');
+ 
+const save = async (csvData:any) => {
+    const csv = new ObjectsToCsv(csvData);
+    await csv.toDisk('./Data.csv');
+  }
+  save(csvData)
+
+});
 
 server.listen(4000,()=>{
   console.log("Server is running.....");

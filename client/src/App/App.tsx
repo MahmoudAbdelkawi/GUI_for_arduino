@@ -84,21 +84,22 @@ function App() {
       return;
     }
     if (!stop) {
-      let id = setTimeout(() => {
-        if (stop) {
-          clearInterval(id)
-        }
-        socket.emit("serialdata", "");
-        
-      }, 100);
-      socket.on("serialdata", (data) => {
-        ref2.current += data.delayTime;
-        data.delayTime = ref2.current;
-        setData((prev: any) => [...prev, data]);
-      });
-      
-    } 
+    socket.emit("serialdata");
+    socket.on("serialdata", (data) => {
+      ref2.current += data.delayTime;
+      data.delayTime = ref2.current;
+      setData((prev: any) => [...prev, data]);
+    });
+    }
+    else {
+      socket.close();
+    }
+      // return () => {
+      //   socket.close();
+      // };
   }, []);
+  console.log(stop);
+  
 
   return (
     <div className="App ">
