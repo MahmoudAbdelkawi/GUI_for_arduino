@@ -112,7 +112,6 @@ try{
   //           console.log(arr[index%4]);
 
   //           delayTime+=arr[index%4].delayTime
-  //           console.log(index);
   //           socket.setMaxListeners(20);
   //           csvData.push({...arr[index%4] , delayTime})
   //           socket.emit("serialdata" , arr[index % 4])
@@ -133,7 +132,7 @@ try{
   //       });
 
   //     });
-  //   // },1)
+    // },1)
 }
 catch(err:any){
   console.log("the kit isn't connected or the path is wrong");

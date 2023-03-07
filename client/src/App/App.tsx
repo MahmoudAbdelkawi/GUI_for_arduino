@@ -97,7 +97,7 @@ function App() {
       // return () => {
       //   socket.close();
       // };
-  }, []);
+  }, [stop]);
   console.log(stop);
   
 
